@@ -18,8 +18,10 @@ module "ec2" {
     source  = "./moduls/ec2"
     ami = "ami-03a71cec707bfc3d7"
     instance_type = var.instance_type
-    security_group_id = module.sg_web.id
-    
+    security_group_ids = concat(
+    [module.sg_web.web_id],
+    module.sg_web.ssh_ids
+    )
 }
 
 module "vpc"{

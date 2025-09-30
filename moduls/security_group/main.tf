@@ -1,18 +1,32 @@
-resource "aws_security_group" "this" {
-    name = var.name
-    description = var.description
+resource "aws_security_group" "ssh" {
+    count = 3
+    name = "${var.name}-ssh-${count.index + 1}"
+    description = "Allow SSH"
     vpc_id = var.vpc_id
 
     ingress {
-        description = "SSH"
+        description = "ssh"
         from_port = 22
-        to_port = 22 
+        to_port = 22
         protocol = "tcp"
         cidr_blocks = ["0.0.0.0/0"]
     }
 
+    egress {
+        from_port = 0
+        to_port = 0
+        protocol = -1
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+}
+
+resource "aws_security_group" "web" {
+    name = var.name 
+    description = "Allow http/https"
+    vpc_id = var.vpc_id 
+
     ingress {
-        description = "HTTP"
+        description = "http" 
         from_port = 80
         to_port = 80
         protocol = "tcp"
@@ -20,17 +34,17 @@ resource "aws_security_group" "this" {
     }
 
     ingress {
-        description = "HTTPS"
-        from_port = 443 
-        to_port = 443 
+        description = "https" 
+        from_port = 443
+        to_port = 443
         protocol = "tcp"
         cidr_blocks = ["0.0.0.0/0"]
     }
 
     egress {
-        from_port = 0 
-        to_port = 0 
-        protocol = -1 
+        from_port = 0
+        to_port = 0
+        protocol = -1
         cidr_blocks = ["0.0.0.0/0"]
     }
-}       
+}
