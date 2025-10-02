@@ -1,50 +1,24 @@
-resource "aws_security_group" "ssh" {
-    count = 3
-    name = "${var.name}-ssh-${count.index + 1}"
-    description = "Allow SSH"
+resource "aws_security_group" "this" {
+    name = var.name
     vpc_id = var.vpc_id
-
-    ingress {
-        description = "ssh"
-        from_port = 22
-        to_port = 22
-        protocol = "tcp"
-        cidr_blocks = ["0.0.0.0/0"]
-    }
-
+    description = "http/https"
     egress {
         from_port = 0
         to_port = 0
-        protocol = -1
+        protocol = "-1"
         cidr_blocks = ["0.0.0.0/0"]
     }
 }
 
-resource "aws_security_group" "web" {
-    name = var.name 
-    description = "Allow http/https"
-    vpc_id = var.vpc_id 
-
-    ingress {
-        description = "http" 
-        from_port = 80
-        to_port = 80
-        protocol = "tcp"
-        cidr_blocks = ["0.0.0.0/0"]
+#Динамічно створюємо SG
+resource "aws_security_group_rule" "ingress" {
+    for_each = {
+        for i in var.ingress_ports : i => i
     }
-
-    ingress {
-        description = "https" 
-        from_port = 443
-        to_port = 443
-        protocol = "tcp"
-        cidr_blocks = ["0.0.0.0/0"]
-    }
-
-    egress {
-        from_port = 0
-        to_port = 0
-        protocol = -1
-        cidr_blocks = ["0.0.0.0/0"]
-    }
+    type = "ingress"
+    from_port = each.value 
+    to_port = each.value
+    protocol = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    security_group_id = aws_security_group.this.id
 }

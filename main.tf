@@ -6,11 +6,33 @@ data "aws_vpc" "default" {
     default = true 
 }
 
+resource "aws_security_group" "ssh" {
+    for_each = toset(var.ssh_groups)
+    description = "ssh"
+    name = each.value
+    vpc_id = data.aws_vpc.default.id
+
+    ingress {
+        from_port = 22
+        to_port = 22
+        protocol = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+
+    egress {
+        from_port = 0
+        to_port = 0
+        protocol = "-1"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+}
+
 module "sg_web" {
     source = "./moduls/security_group"
     name = "web_server_sg"
-    description = "security groput with allow ssh, http and https"
+    description = "http/https"
     vpc_id = data.aws_vpc.default.id
+    ingress_ports = [22, 80, 443, 8080, 8443]
 }
 
 module "ec2" {
@@ -18,10 +40,7 @@ module "ec2" {
     source  = "./moduls/ec2"
     ami = "ami-03a71cec707bfc3d7"
     instance_type = var.instance_type
-    security_group_ids = concat(
-    [module.sg_web.web_id],
-    module.sg_web.ssh_ids
-    )
+    security_group_ids = [module.sg_web.sg_id]
 }
 
 module "vpc"{

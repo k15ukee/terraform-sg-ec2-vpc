@@ -1,6 +1,8 @@
 output "ssh_ids" {
-    value = aws_security_group.ssh[*].id
+    value = aws_security_group.this.id
 }
-output "web_id" {
-    value = aws_security_group.web.id
+
+
+output "sg_id" {
+    value = aws_security_group.this.id
 }
